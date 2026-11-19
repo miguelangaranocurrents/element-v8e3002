@@ -26,6 +26,7 @@ import { LinkedText } from "@element-hq/web-shared-components";
 import dis from "../dispatcher/dispatcher";
 import { _t, _td, UserFriendlyError } from "../languageHandler";
 import Modal from "../Modal";
+import Markdown from "../Markdown";
 import MultiInviter from "../utils/MultiInviter";
 import { topicToHtml } from "../HtmlUtils";
 import QuestionDialog from "../components/views/dialogs/QuestionDialog";
@@ -73,7 +74,10 @@ export const Commands = [
         args: "<message>",
         description: _td("slash_command|spoiler"),
         runFn: function (cli, roomId, threadId, message = "") {
-            return successSync(ContentHelpers.makeHtmlMessage(message, `<span data-mx-spoiler>${message}</span>`));
+            // Render markdown in the spoiler the same way as a regular message would be
+            const parser = new Markdown(message);
+            const html = parser.isPlainText() ? message : parser.toHTML().replace(/^<p>([\s\S]*)<\/p>\n?$/, "$1");
+            return successSync(ContentHelpers.makeHtmlMessage(message, `<span data-mx-spoiler>${html}</span>`));
         },
         category: CommandCategories.messages,
     }),
